@@ -5,7 +5,10 @@ SUBDIRS =
 noinst_LTLIBRARIES = libsockettask.la
 
 SOURCES = \
-	ConnectToEndPoint.h
+	AIEndPoint.h \
+	AIEndPoint.cxx \
+	ConnectToEndPoint.h \
+	ConnectToEndPoint.cxx
 
 libsockettask_la_SOURCES = ${SOURCES}
 libsockettask_la_CXXFLAGS = @LIBCWD_R_FLAGS@
