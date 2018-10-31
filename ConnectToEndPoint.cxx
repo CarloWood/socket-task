@@ -31,25 +31,71 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
   switch(run_state)
   {
     AI_CASE_RETURN(ConnectToEndPoint_start);
-    AI_CASE_RETURN(ConnectToEndPoint_ready);
+    AI_CASE_RETURN(ConnectToEndPoint_connect_begin);
+    AI_CASE_RETURN(ConnectToEndPoint_connect);
+    AI_CASE_RETURN(ConnectToEndPoint_connect_failed);
+    AI_CASE_RETURN(ConnectToEndPoint_connected);
     AI_CASE_RETURN(ConnectToEndPoint_done);
   }
   ASSERT(false);
   return "UNKNOWN STATE";
 }
 
+void ConnectToEndPoint::connect_result(bool success)
+{
+  set_state(success ? ConnectToEndPoint_connected : ConnectToEndPoint_connect_failed);
+  signal(2);
+}
+
+// Socket
 void ConnectToEndPoint::multiplex_impl(state_type run_state)
 {
   switch (run_state)
   {
     case ConnectToEndPoint_start:
-      // Advance to state ConnectToEndPoint_ready when m_end_point is usable.
-      set_state(ConnectToEndPoint_ready);
+      // Do hostname lookup, if necessary.
+      m_end_point.run(m_get_addr_info, this, 1 COMMA_DEBUG_ONLY(mSMDebug));
+      // Wait until m_end_point becomes usable, then continue at state begin.
+      set_state(ConnectToEndPoint_connect_begin);
       wait(1);
-      m_end_point.run(m_get_addr_info, this, 1 COMMA_DEBUG_ONLY(mSMDebug));     // Do hostname lookup, if necessary.
       break;
-    case ConnectToEndPoint_ready:
+    case ConnectToEndPoint_connect_begin:
+      // Try to connect any address of m_end_point until one succeeds.
+      if (!m_end_point.reset())  // Can this even happen?
+      {
+        abort();
+        break;
+      }
+      set_state(ConnectToEndPoint_connect);
       /* FALL-THROUGH */
+    case ConnectToEndPoint_connect:
+    {
+      evio::SocketAddress address = m_end_point.current();
+      if (address.is_unspecified())
+      {
+        // Could not connect to any IP address.
+        abort();
+        break;
+      }
+//      connect(address);
+      // Wait for connect_result to be called.
+      wait(2);
+      break;
+    }
+    case ConnectToEndPoint_connect_failed:
+      // Advance to the next address, if any.
+      if (!m_end_point.next())
+      {
+        abort();
+        break;
+      }
+      set_state(ConnectToEndPoint_connect);
+      break;
+    case ConnectToEndPoint_connected:
+      set_state(ConnectToEndPoint_done);
+      // Wait till connection is terminated.
+      wait(4);
+      break;
     case ConnectToEndPoint_done:
       finish();
       break;

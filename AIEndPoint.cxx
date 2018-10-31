@@ -25,3 +25,45 @@ void AIEndPoint::run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTa
   // No need to run at all.
   parent->signal(condition);
 }
+
+bool AIEndPoint::reset()
+{
+  if (m_cached)
+  {
+    // Don't call reset until a call to run() caused a call to parent->signal(condition).
+    ASSERT(m_cached->is_ready());
+    if (!m_cached->success())
+      return false;             // DNS lookup failed.
+    m_addrinfo = m_cached->get_result();
+    // For now I'm assuming this can't happen. If it does happen then the code below might be a workaround.
+    ASSERT(m_addrinfo);
+    if (!m_addrinfo)
+    {
+      Dout(dc::warning, "DNS lookup succeeded, but no IP numbers found (cached result for \"" << m_cached->hostname() << "\")!");
+      // Return false will cause get_error() to be called, so set some error.
+      m_cached->set_error_empty();
+      return false;
+    }
+  }
+  else
+    m_sockaddr = m_address;
+  return true;
+}
+
+evio::SocketAddress AIEndPoint::current() const
+{
+  // Only call this when the last call to reset() / next() returned true.
+  return m_cached ? m_addrinfo->ai_addr : m_sockaddr;
+}
+
+bool AIEndPoint::next()
+{
+  if (m_cached)
+  {
+    if ((m_addrinfo = m_addrinfo->ai_next))
+      return true;
+  }
+  else
+    m_sockaddr = nullptr;
+  return false;
+}

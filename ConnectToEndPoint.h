@@ -25,6 +25,7 @@
 
 #include "statefultask/AIStatefulTask.h"
 #include "resolver-task/GetAddrInfo.h"
+#include "evio/SocketAddress.h"
 #include "AIEndPoint.h"
 #include "debug.h"
 
@@ -45,7 +46,10 @@ class ConnectToEndPoint : public AIStatefulTask
   //! The different states of the stateful task.
   enum connect_to_end_point_state_type {
     ConnectToEndPoint_start = direct_base_type::max_state,
-    ConnectToEndPoint_ready,
+    ConnectToEndPoint_connect_begin,
+    ConnectToEndPoint_connect,
+    ConnectToEndPoint_connect_failed,
+    ConnectToEndPoint_connected,
     ConnectToEndPoint_done
   };
 
@@ -74,6 +78,12 @@ class ConnectToEndPoint : public AIStatefulTask
  protected:
   //! Call finish() (or abort()), not delete.
   ~ConnectToEndPoint() override { DoutEntering(dc::statefultask(mSMDebug), "~ConnectToEndPoint() [" << (void*)this << "]"); }
+
+  //! Attempt a connect to address. This function should result in a single call to connect_result.
+  void connect(evio::SocketAddress const& address);
+
+  //! Called when a connect success or failure was detected.
+  void connect_result(bool success);
 
   //! Implemenation of state_str for run states.
   char const* state_str_impl(state_type run_state) const override;
