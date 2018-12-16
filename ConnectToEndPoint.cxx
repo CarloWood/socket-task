@@ -24,7 +24,31 @@
 #include "sys.h"
 #include "ConnectToEndPoint.h"
 
+namespace {
+
+using VT_type = evio::Socket::VT_type;
+struct VT_impl : evio::Socket::VT_impl
+{
+  // Override
+  static void connected(evio::Socket* self);
+};
+
+// Dynamically override Socket::connected.
+void override_connected(evio::Socket* socket)
+{
+  //FIXME socket->VT_ptr->_connected = VT_impl::connected;
+
+}
+
+} // namespace
+
 namespace task {
+
+void ConnectToEndPoint::set_socket(boost::intrusive_ptr<evio::Socket>&& socket)
+{
+  m_socket = std::move(socket);
+  override_connected(m_socket.get());
+}
 
 char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
 {
@@ -39,6 +63,11 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
   }
   ASSERT(false);
   return "UNKNOWN STATE";
+}
+
+void ConnectToEndPoint::connect(evio::SocketAddress const& address)
+{
+  m_socket->connect(address);
 }
 
 void ConnectToEndPoint::connect_result(bool success)
@@ -77,7 +106,7 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
         abort();
         break;
       }
-//      connect(address);
+      connect(address);
       // Wait for connect_result to be called.
       wait(2);
       break;

@@ -30,7 +30,6 @@ class AIEndPoint
   AIEndPoint(evio::SocketAddress const& address) : m_address(address) { }
 
   bool is_ready() const { return !m_cached || m_cached->is_ready(); }
-  evio::SocketAddress get_address() const;
 
   // Reset the union iterator.
   bool reset();

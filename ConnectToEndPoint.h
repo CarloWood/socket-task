@@ -25,7 +25,7 @@
 
 #include "statefultask/AIStatefulTask.h"
 #include "resolver-task/GetAddrInfo.h"
-#include "evio/SocketAddress.h"
+#include "evio/Socket.h"
 #include "AIEndPoint.h"
 #include "debug.h"
 
@@ -67,6 +67,13 @@ class ConnectToEndPoint : public AIStatefulTask
     { DoutEntering(dc::statefultask(mSMDebug), "ConnectToEndPoint() [" << (void*)this << "]"); }
 
   /*!
+   * @brief Set socket.
+   */
+  void set_socket(boost::intrusive_ptr<evio::Socket>&& socket);
+
+  boost::intrusive_ptr<evio::Socket> get_socket() const { return m_socket; }
+
+  /*!
    * @brief Set the end point to connect to.
    *
    * @param end_point The internet end point that should be connected to.
@@ -90,6 +97,9 @@ class ConnectToEndPoint : public AIStatefulTask
 
   //! Handle mRunState.
   void multiplex_impl(state_type run_state) override;
+
+ private:
+  boost::intrusive_ptr<evio::Socket> m_socket;
 };
 
 } // namespace task

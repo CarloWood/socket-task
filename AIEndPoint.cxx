@@ -53,7 +53,7 @@ bool AIEndPoint::reset()
 evio::SocketAddress AIEndPoint::current() const
 {
   // Only call this when the last call to reset() / next() returned true.
-  return m_cached ? m_addrinfo->ai_addr : m_sockaddr;
+  return m_cached ? evio::SocketAddress(m_addrinfo->ai_addr, m_cached->get_port()) : evio::SocketAddress(m_sockaddr);
 }
 
 bool AIEndPoint::next()
