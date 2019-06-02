@@ -48,13 +48,17 @@ class ConnectToEndPoint : public AIStatefulTask
     ConnectToEndPoint_start = direct_base_type::max_state,
     ConnectToEndPoint_connect_begin,
     ConnectToEndPoint_connect,
-    ConnectToEndPoint_connect_failed,
+    ConnectToEndPoint_connect_wait,
     ConnectToEndPoint_connected,
+    ConnectToEndPoint_connect_failed,
     ConnectToEndPoint_done
   };
 
-  AIEndPoint m_end_point;
+  AIEndPoint m_end_point;                                       // The end point to connect to, set with set_end_point.
   boost::intrusive_ptr<task::GetAddrInfo> m_get_addr_info;
+  boost::intrusive_ptr<evio::Socket> m_socket;                  // The socket to use for the connection, set with set_socket.
+  std::shared_ptr<evio::Socket::VT_type> m_socket_VT;           // The replaced virtual table of m_socket, or unset when not replaced yet.
+  bool m_connect_success;
 
  public:
   //! One beyond the largest state of this task.
@@ -84,10 +88,10 @@ class ConnectToEndPoint : public AIStatefulTask
 
  protected:
   //! Call finish() (or abort()), not delete.
-  ~ConnectToEndPoint() override { DoutEntering(dc::statefultask(mSMDebug), "~ConnectToEndPoint() [" << (void*)this << "]"); }
+  ~ConnectToEndPoint() { DoutEntering(dc::statefultask(mSMDebug), "~ConnectToEndPoint() [" << (void*)this << "]"); }
 
-  //! Attempt a connect to address. This function should result in a single call to connect_result.
-  void connect(evio::SocketAddress const& address);
+  //! Attempt a connect to address. Returning false is a failure, otherwise this function should result in a single call to connect_result.
+  bool connect(evio::SocketAddress const& address);
 
   //! Called when a connect success or failure was detected.
   void connect_result(bool success);
@@ -99,7 +103,8 @@ class ConnectToEndPoint : public AIStatefulTask
   void multiplex_impl(state_type run_state) override;
 
  private:
-  boost::intrusive_ptr<evio::Socket> m_socket;
+  // Called when the socket is connected.
+  static void s_connected(evio::Socket* socket, bool success);
 };
 
 } // namespace task

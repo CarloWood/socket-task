@@ -24,30 +24,21 @@
 #include "sys.h"
 #include "ConnectToEndPoint.h"
 
-namespace {
-
-using VT_type = evio::Socket::VT_type;
-struct VT_impl : evio::Socket::VT_impl
-{
-  // Override
-  static void connected(evio::Socket* self);
-};
-
-// Dynamically override Socket::connected.
-void override_connected(evio::Socket* socket)
-{
-  //FIXME socket->VT_ptr->_connected = VT_impl::connected;
-
-}
-
-} // namespace
-
 namespace task {
+
+//static
+void ConnectToEndPoint::s_connected(evio::Socket* socket, bool success)
+{
+  static_cast<ConnectToEndPoint*>(socket->VT_ptr->_input_user_data)->connect_result(success);
+}
 
 void ConnectToEndPoint::set_socket(boost::intrusive_ptr<evio::Socket>&& socket)
 {
   m_socket = std::move(socket);
-  override_connected(m_socket.get());
+  // Dynamically override Socket::connected.
+  m_socket_VT = std::shared_ptr<evio::Socket::VT_type>(m_socket->clone_VT());
+  m_socket_VT->_input_user_data = this; // Abuse the virtual table by also storing a pointer to this.
+  m_socket_VT->_connected = ConnectToEndPoint::s_connected;
 }
 
 char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
@@ -57,22 +48,23 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
     AI_CASE_RETURN(ConnectToEndPoint_start);
     AI_CASE_RETURN(ConnectToEndPoint_connect_begin);
     AI_CASE_RETURN(ConnectToEndPoint_connect);
-    AI_CASE_RETURN(ConnectToEndPoint_connect_failed);
+    AI_CASE_RETURN(ConnectToEndPoint_connect_wait);
     AI_CASE_RETURN(ConnectToEndPoint_connected);
+    AI_CASE_RETURN(ConnectToEndPoint_connect_failed);
     AI_CASE_RETURN(ConnectToEndPoint_done);
   }
   ASSERT(false);
   return "UNKNOWN STATE";
 }
 
-void ConnectToEndPoint::connect(evio::SocketAddress const& address)
+bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
 {
-  m_socket->connect(address);
+  return m_socket->connect(address);
 }
 
 void ConnectToEndPoint::connect_result(bool success)
 {
-  set_state(success ? ConnectToEndPoint_connected : ConnectToEndPoint_connect_failed);
+  m_connect_success = success;
   signal(2);
 }
 
@@ -89,7 +81,7 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
       wait(1);
       break;
     case ConnectToEndPoint_connect_begin:
-      // Try to connect any address of m_end_point until one succeeds.
+      // Try to connect to any address of m_end_point until one succeeds.
       if (!m_end_point.reset())  // Can this even happen?
       {
         abort();
@@ -106,24 +98,38 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
         abort();
         break;
       }
-      connect(address);
+      if (!connect(address))
+      {
+        set_state(ConnectToEndPoint_connect_failed);
+        break;
+      }
       // Wait for connect_result to be called.
+      set_state(ConnectToEndPoint_connect_wait);
       wait(2);
       break;
     }
-    case ConnectToEndPoint_connect_failed:
-      // Advance to the next address, if any.
-      if (!m_end_point.next())
+    case ConnectToEndPoint_connect_wait:
+      if (!m_connect_success)
       {
-        abort();
+        set_state(ConnectToEndPoint_connect_failed);
         break;
       }
-      set_state(ConnectToEndPoint_connect);
-      break;
+      set_state(ConnectToEndPoint_connected);
+      /* FALL-THROUGH */
     case ConnectToEndPoint_connected:
       set_state(ConnectToEndPoint_done);
       // Wait till connection is terminated.
       wait(4);
+      break;
+    case ConnectToEndPoint_connect_failed:
+      // Advance to the next address, if any.
+      if (!m_end_point.next())
+      {
+        Dout(dc::statefultask(mSMDebug), "None of the possible addresses succeeded to connect. Aborting.");
+        abort();
+        break;
+      }
+      set_state(ConnectToEndPoint_connect);
       break;
     case ConnectToEndPoint_done:
       finish();
