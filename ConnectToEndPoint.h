@@ -57,7 +57,6 @@ class ConnectToEndPoint : public AIStatefulTask
   AIEndPoint m_end_point;                                       // The end point to connect to, set with set_end_point.
   boost::intrusive_ptr<task::GetAddrInfo> m_get_addr_info;
   boost::intrusive_ptr<evio::Socket> m_socket;                  // The socket to use for the connection, set with set_socket.
-  std::shared_ptr<evio::Socket::VT_type> m_socket_VT;           // The replaced virtual table of m_socket, or unset when not replaced yet.
   bool m_connect_success;
 
  public:
@@ -93,18 +92,15 @@ class ConnectToEndPoint : public AIStatefulTask
   //! Attempt a connect to address. Returning false is a failure, otherwise this function should result in a single call to connect_result.
   bool connect(evio::SocketAddress const& address);
 
-  //! Called when a connect success or failure was detected.
-  void connect_result(bool success);
-
   //! Implemenation of state_str for run states.
   char const* state_str_impl(state_type run_state) const override;
 
   //! Handle mRunState.
   void multiplex_impl(state_type run_state) override;
 
- private:
-  // Called when the socket is connected.
-  static void s_connected(evio::Socket* socket, bool success);
+ public:
+  // Called by the Socket when the socket is connected.
+  void connected_cb(int& allow_deletion_count, bool success);
 };
 
 } // namespace task

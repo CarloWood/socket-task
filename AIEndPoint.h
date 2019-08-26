@@ -19,6 +19,7 @@ class AIEndPoint
  public:
   // Construct empty AIEndPoint for assignment.
   AIEndPoint() = default;
+  ~AIEndPoint() { }
 
   // AIEndPoint takes the same arguments as Resolver::getaddrinfo().
   template<typename S1, typename... Args, typename = typename std::enable_if<

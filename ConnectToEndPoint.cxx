@@ -26,19 +26,16 @@
 
 namespace task {
 
-//static
-void ConnectToEndPoint::s_connected(evio::Socket* socket, bool success)
+void ConnectToEndPoint::connected_cb(int& UNUSED_ARG(allow_deletion_count), bool success)
 {
-  static_cast<ConnectToEndPoint*>(socket->VT_ptr->_input_user_data)->connect_result(success);
+  m_connect_success = success;
+  signal(2);
 }
 
 void ConnectToEndPoint::set_socket(boost::intrusive_ptr<evio::Socket>&& socket)
 {
   m_socket = std::move(socket);
-  // Dynamically override Socket::connected.
-  m_socket_VT = std::shared_ptr<evio::Socket::VT_type>(m_socket->clone_VT());
-  m_socket_VT->_input_user_data = this; // Abuse the virtual table by also storing a pointer to this.
-  m_socket_VT->_connected = ConnectToEndPoint::s_connected;
+  m_socket->onConnected([this](int& allow_deletion_count, bool success){ connected_cb(allow_deletion_count, success); });
 }
 
 char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
@@ -60,12 +57,6 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
 bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
 {
   return m_socket->connect(address);
-}
-
-void ConnectToEndPoint::connect_result(bool success)
-{
-  m_connect_success = success;
-  signal(2);
 }
 
 // Socket
