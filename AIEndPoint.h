@@ -21,11 +21,11 @@ class AIEndPoint
   AIEndPoint() = default;
   ~AIEndPoint() { }
 
-  // AIEndPoint takes the same arguments as Resolver::getaddrinfo().
+  // AIEndPoint takes the same arguments as DnsResolver::getaddrinfo().
   template<typename S1, typename... Args, typename = typename std::enable_if<
     std::is_same<S1, std::string>::value || std::is_convertible<S1, std::string>::value>::type>
   AIEndPoint(S1&& node, Args... port_or_service_and_optional_hints)
-    : m_cached(resolver::Resolver::instance().getaddrinfo(std::forward<std::string>(node), port_or_service_and_optional_hints...)) { }
+    : m_cached(resolver::DnsResolver::instance().getaddrinfo(std::forward<std::string>(node), port_or_service_and_optional_hints...)) { }
 
   // Specify the exact end point by IP#, family and port.
   AIEndPoint(evio::SocketAddress const& address) : m_address(address) { }
@@ -40,6 +40,9 @@ class AIEndPoint
 
   // Advance to the next address, if any.
   bool next();
+
+  // Return the to be resolved (possibly already resolved) hostname.
+  std::string hostname() const { return m_cached->hostname(); }
 
   // Create (if still empty) and run a GetAddrInfo task, calling cont() on the parent when ready.
   void run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type conditions COMMA_DEBUG_ONLY(bool debug_resolver));

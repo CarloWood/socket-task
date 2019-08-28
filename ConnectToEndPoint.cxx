@@ -32,10 +32,17 @@ void ConnectToEndPoint::connected_cb(int& UNUSED_ARG(allow_deletion_count), bool
   signal(2);
 }
 
+void ConnectToEndPoint::disconnected_cb(int& UNUSED_ARG(allow_deletion_count), bool success)
+{
+  m_clean_disconnect = success;
+  signal(4);
+}
+
 void ConnectToEndPoint::set_socket(boost::intrusive_ptr<evio::Socket>&& socket)
 {
   m_socket = std::move(socket);
   m_socket->onConnected([this](int& allow_deletion_count, bool success){ connected_cb(allow_deletion_count, success); });
+  m_socket->onDisconnected([this](int& allow_deletion_count, bool success){ disconnected_cb(allow_deletion_count, success); });
 }
 
 char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
@@ -56,6 +63,7 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
 
 bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
 {
+  m_socket->set_sni(m_end_point.hostname());
   return m_socket->connect(address);
 }
 
@@ -65,6 +73,9 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
   switch (run_state)
   {
     case ConnectToEndPoint_start:
+      // Initialize.
+      m_connect_success = false;
+      m_clean_disconnect = false;
       // Do hostname lookup, if necessary.
       m_end_point.run(m_get_addr_info, this, 1 COMMA_DEBUG_ONLY(mSMDebug));
       // Wait until m_end_point becomes usable, then continue at state begin.

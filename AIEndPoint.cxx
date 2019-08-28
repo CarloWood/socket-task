@@ -19,7 +19,7 @@ void AIEndPoint::run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTa
   {
     task = new task::GetAddrInfo(DEBUG_ONLY(debug_resolver));
     task->init(m_cached);
-    task->run(resolver::Resolver::instance().get_handler(), [parent, condition](bool){ parent->signal(condition); });
+    task->run(resolver::DnsResolver::instance().get_handler(), [parent, condition](bool){ parent->signal(condition); });
     return;
   }
   // No need to run at all.

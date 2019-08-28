@@ -58,6 +58,7 @@ class ConnectToEndPoint : public AIStatefulTask
   boost::intrusive_ptr<task::GetAddrInfo> m_get_addr_info;
   boost::intrusive_ptr<evio::Socket> m_socket;                  // The socket to use for the connection, set with set_socket.
   bool m_connect_success;
+  bool m_clean_disconnect;
 
  public:
   //! One beyond the largest state of this task.
@@ -101,6 +102,7 @@ class ConnectToEndPoint : public AIStatefulTask
  public:
   // Called by the Socket when the socket is connected.
   void connected_cb(int& allow_deletion_count, bool success);
+  void disconnected_cb(int& allow_deletion_count, bool success);
 };
 
 } // namespace task
