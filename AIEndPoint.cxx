@@ -10,14 +10,14 @@ std::ostream& operator<<(std::ostream& os, AIEndPoint const& end_point)
   return os << '}';
 }
 
-void AIEndPoint::run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type condition COMMA_DEBUG_ONLY(bool debug_resolver))
+void AIEndPoint::run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type condition COMMA_CWDEBUG_ONLY(bool debug_resolver))
 {
   // Only call run() once, and pass it a default constructed boost::intrusive_ptr<task::GetAddrInfo>.
   ASSERT(!task);
   // Did we ask for a hostname lookup and did it not finish yet?
   if (m_cached && !m_cached->is_ready())
   {
-    task = new task::GetAddrInfo(DEBUG_ONLY(debug_resolver));
+    task = new task::GetAddrInfo(CWDEBUG_ONLY(debug_resolver));
     task->init(m_cached);
     task->run(resolver::DnsResolver::instance().get_handler(), [parent, condition](bool){ parent->signal(condition); });
     return;

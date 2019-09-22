@@ -77,7 +77,7 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
       m_connect_success = false;
       m_clean_disconnect = false;
       // Do hostname lookup, if necessary.
-      m_end_point.run(m_get_addr_info, this, 1 COMMA_DEBUG_ONLY(mSMDebug));
+      m_end_point.run(m_get_addr_info, this, 1 COMMA_CWDEBUG_ONLY(mSMDebug));
       // Wait until m_end_point becomes usable, then continue at state begin.
       set_state(ConnectToEndPoint_connect_begin);
       wait(1);

@@ -67,7 +67,7 @@ class ConnectToEndPoint : public AIStatefulTask
   /*!
    * @brief Construct an ConnectToEndPoint object.
    */
-  ConnectToEndPoint(DEBUG_ONLY(bool debug = false)) DEBUG_ONLY(: AIStatefulTask(debug))
+  ConnectToEndPoint(CWDEBUG_ONLY(bool debug = false)) CWDEBUG_ONLY(: AIStatefulTask(debug))
     { DoutEntering(dc::statefultask(mSMDebug), "ConnectToEndPoint() [" << (void*)this << "]"); }
 
   /*!

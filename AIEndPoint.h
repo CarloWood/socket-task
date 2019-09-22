@@ -45,7 +45,7 @@ class AIEndPoint
   std::string hostname() const { return m_cached->hostname(); }
 
   // Create (if still empty) and run a GetAddrInfo task, calling cont() on the parent when ready.
-  void run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type conditions COMMA_DEBUG_ONLY(bool debug_resolver));
+  void run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type conditions COMMA_CWDEBUG_ONLY(bool debug_resolver));
 
   // Support writing to an ostream.
   friend std::ostream& operator<<(std::ostream& os, AIEndPoint const& end_point);
