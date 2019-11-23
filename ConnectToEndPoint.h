@@ -45,7 +45,7 @@ class ConnectToEndPoint : public AIStatefulTask
 
   //! The different states of the stateful task.
   enum connect_to_end_point_state_type {
-    ConnectToEndPoint_start = direct_base_type::max_state,
+    ConnectToEndPoint_start = direct_base_type::state_end,
     ConnectToEndPoint_connect_begin,
     ConnectToEndPoint_connect,
     ConnectToEndPoint_connect_wait,
@@ -62,7 +62,7 @@ class ConnectToEndPoint : public AIStatefulTask
 
  public:
   //! One beyond the largest state of this task.
-  static state_type constexpr max_state = ConnectToEndPoint_done + 1;
+  static state_type constexpr state_end = ConnectToEndPoint_done + 1;
 
   /*!
    * @brief Construct an ConnectToEndPoint object.
