@@ -90,7 +90,7 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
         break;
       }
       set_state(ConnectToEndPoint_connect);
-      /* FALL-THROUGH */
+      [[fallthrough]];
     case ConnectToEndPoint_connect:
     {
       evio::SocketAddress address = m_end_point.current();
@@ -117,7 +117,7 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
         break;
       }
       set_state(ConnectToEndPoint_connected);
-      /* FALL-THROUGH */
+      [[fallthrough]];
     case ConnectToEndPoint_connected:
       set_state(ConnectToEndPoint_done);
       // Wait till connection is terminated.
