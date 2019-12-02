@@ -31,19 +31,18 @@
 
 namespace task {
 
-/*!
- * @brief The socket task.
+/**
+ * The socket task.
  *
  * Before calling @link group_run run()@endlink, call set_end_point() to pass needed parameters.
  */
-
 class ConnectToEndPoint : public AIStatefulTask
 {
  protected:
-  //! The base class of this task.
+  /// The base class of this task.
   using direct_base_type = AIStatefulTask;
 
-  //! The different states of the stateful task.
+  /// The different states of the stateful task.
   enum connect_to_end_point_state_type {
     ConnectToEndPoint_start = direct_base_type::state_end,
     ConnectToEndPoint_connect_begin,
@@ -61,24 +60,20 @@ class ConnectToEndPoint : public AIStatefulTask
   bool m_clean_disconnect;
 
  public:
-  //! One beyond the largest state of this task.
+  /// One beyond the largest state of this task.
   static state_type constexpr state_end = ConnectToEndPoint_done + 1;
 
-  /*!
-   * @brief Construct an ConnectToEndPoint object.
-   */
+  /// Construct an ConnectToEndPoint object.
   ConnectToEndPoint(CWDEBUG_ONLY(bool debug = false)) CWDEBUG_ONLY(: AIStatefulTask(debug))
     { DoutEntering(dc::statefultask(mSMDebug), "ConnectToEndPoint() [" << (void*)this << "]"); }
 
-  /*!
-   * @brief Set socket.
-   */
+  /// Set socket.
   void set_socket(boost::intrusive_ptr<evio::Socket>&& socket);
 
   boost::intrusive_ptr<evio::Socket> get_socket() const { return m_socket; }
 
-  /*!
-   * @brief Set the end point to connect to.
+  /**
+   * Set the end point to connect to.
    *
    * @param end_point The internet end point that should be connected to.
    */
@@ -87,16 +82,16 @@ class ConnectToEndPoint : public AIStatefulTask
   AIEndPoint const& get_end_point() const { return m_end_point; }
 
  protected:
-  //! Call finish() (or abort()), not delete.
+  /// Call finish() (or abort()), not delete.
   ~ConnectToEndPoint() { DoutEntering(dc::statefultask(mSMDebug), "~ConnectToEndPoint() [" << (void*)this << "]"); }
 
-  //! Attempt a connect to address. Returning false is a failure, otherwise this function should result in a single call to connect_result.
+  /// Attempt a connect to address. Returning false is a failure, otherwise this function should result in a single call to connect_result.
   bool connect(evio::SocketAddress const& address);
 
-  //! Implemenation of state_str for run states.
+  /// Implemenation of state_str for run states.
   char const* state_str_impl(state_type run_state) const override;
 
-  //! Handle mRunState.
+  /// Handle mRunState.
   void multiplex_impl(state_type run_state) override;
 
  public:
