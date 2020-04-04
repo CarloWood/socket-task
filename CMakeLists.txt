@@ -46,6 +46,8 @@ target_compile_features(socket-task_ObjLib
 target_link_libraries(socket-task_ObjLib
   PUBLIC
     AICxx::statefultask
+  PRIVATE
+    farmhash::farmhash
 )
 
 # Create an ALIAS target.
