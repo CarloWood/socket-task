@@ -45,8 +45,8 @@ void ConnectToEndPoint::disconnected_cb(int& UNUSED_ARG(allow_deletion_count), b
 void ConnectToEndPoint::set_socket(boost::intrusive_ptr<evio::Socket>&& socket)
 {
   m_socket = std::move(socket);
-  m_socket->onConnected([this](int& allow_deletion_count, bool success){ connected_cb(allow_deletion_count, success); });
-  m_socket->onDisconnected([this](int& allow_deletion_count, bool success){ disconnected_cb(allow_deletion_count, success); });
+  m_socket->on_connected([this](int& allow_deletion_count, bool success){ connected_cb(allow_deletion_count, success); });
+  m_socket->on_disconnected([this](int& allow_deletion_count, bool success){ disconnected_cb(allow_deletion_count, success); });
 }
 
 char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
