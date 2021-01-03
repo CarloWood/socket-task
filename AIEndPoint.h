@@ -71,6 +71,9 @@ class AIEndPoint
   // Return the to be resolved (possibly already resolved) hostname.
   std::string hostname() const { return m_cached->hostname(); }
 
+  // Return the port, if any was set.
+  uint16_t port() const { return m_cached->get_port(); }
+
   // Create (if still empty) and run a GetAddrInfo task, calling cont() on the parent when ready.
   void run(boost::intrusive_ptr<task::GetAddrInfo>& task, AIStatefulTask* parent, AIStatefulTask::condition_type conditions COMMA_CWDEBUG_ONLY(bool debug_resolver));
 
