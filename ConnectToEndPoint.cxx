@@ -123,6 +123,8 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
       set_state(ConnectToEndPoint_connected);
       [[fallthrough]];
     case ConnectToEndPoint_connected:
+      if (m_connected_cb)
+        m_connected_cb(true);
       set_state(ConnectToEndPoint_done);
       // Wait till connection is terminated.
       wait(4);
@@ -132,6 +134,8 @@ void ConnectToEndPoint::multiplex_impl(state_type run_state)
       if (!m_end_point.next())
       {
         Dout(dc::statefultask(mSMDebug), "None of the possible addresses succeeded to connect. Aborting.");
+        if (m_connected_cb)
+          m_connected_cb(false);
         abort();
         break;
       }

@@ -62,6 +62,7 @@ class ConnectToEndPoint : public AIStatefulTask
   boost::intrusive_ptr<evio::Socket> m_socket;                  // The socket to use for the connection, set with set_socket.
   bool m_connect_success;
   bool m_clean_disconnect;
+  std::function<void (bool)> m_connected_cb;                    // Called upon successful connect, with parameter true; or upon permanent failure, with parameter false.
 
  public:
   /// One beyond the largest state of this task.
@@ -84,6 +85,8 @@ class ConnectToEndPoint : public AIStatefulTask
   void set_end_point(AIEndPoint&& end_point) { m_end_point = std::move(end_point); }
 
   AIEndPoint const& get_end_point() const { return m_end_point; }
+
+  void on_connected(std::function<void (bool)> connected_cb) { m_connected_cb = std::move(connected_cb); }
 
  protected:
   /// Call finish() (or abort()), not delete.

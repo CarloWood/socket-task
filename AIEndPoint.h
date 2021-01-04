@@ -57,6 +57,11 @@ class AIEndPoint
   // Specify the exact end point by IP#, family and port.
   AIEndPoint(evio::SocketAddress const& address) : m_address(address) { }
 
+  AIEndPoint(AIEndPoint const& orig) = default;
+  AIEndPoint(AIEndPoint&& from) = default;
+  AIEndPoint& operator=(AIEndPoint const& orig) { m_cached = orig.m_cached; m_address = orig.m_address; m_addrinfo = orig.m_addrinfo; return *this; }
+  AIEndPoint& operator=(AIEndPoint&& from) { m_cached = std::move(from.m_cached); m_address = std::move(from.m_address); m_addrinfo = from.m_addrinfo; return *this; }
+
   bool is_ready() const { return !m_cached || m_cached->is_ready(); }
 
   // Reset the union iterator.
