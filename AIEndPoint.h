@@ -63,6 +63,7 @@ class AIEndPoint
   AIEndPoint& operator=(AIEndPoint&& from) { m_cached = std::move(from.m_cached); m_address = std::move(from.m_address); m_addrinfo = from.m_addrinfo; return *this; }
 
   bool is_ready() const { return !m_cached || m_cached->is_ready(); }
+  bool used_dns() const { return !!m_cached; }
 
   // Reset the union iterator.
   bool reset();

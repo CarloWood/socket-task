@@ -27,6 +27,7 @@
 
 #include "sys.h"
 #include "ConnectToEndPoint.h"
+#include "evio/TLSSocket.h"
 
 namespace task {
 
@@ -67,7 +68,11 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
 
 bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
 {
-  m_socket->set_sni(m_end_point.hostname());
+  // A TLSSocket needs to use DNS because in that case an sni needs to be set.
+  // Use a FQDN for the EndPoint to connect to.
+  ASSERT(m_end_point.used_dns() || !dynamic_cast<evio::TLSSocket*>(m_socket.get()));
+  if (m_end_point.used_dns())
+    m_socket->set_sni(m_end_point.hostname());
   return m_socket->connect(address);
 }
 
