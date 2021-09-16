@@ -69,7 +69,7 @@ class ConnectToEndPoint : public AIStatefulTask
   static state_type constexpr state_end = ConnectToEndPoint_done + 1;
 
   /// Construct an ConnectToEndPoint object.
-  ConnectToEndPoint(CWDEBUG_ONLY(bool debug = false)) CWDEBUG_ONLY(: AIStatefulTask(debug))
+  ConnectToEndPoint(CWDEBUG_ONLY(bool debug = false)) : AIStatefulTask(CWDEBUG_ONLY(debug))
     { DoutEntering(dc::statefultask(mSMDebug), "ConnectToEndPoint() [" << (void*)this << "]"); }
 
   /// Set socket.
