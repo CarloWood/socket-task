@@ -66,7 +66,7 @@ class ConnectToEndPoint : public AIStatefulTask
 
  public:
   /// One beyond the largest state of this task.
-  static state_type constexpr state_end = ConnectToEndPoint_done + 1;
+  static constexpr state_type state_end = ConnectToEndPoint_done + 1;
 
   /// Construct an ConnectToEndPoint object.
   ConnectToEndPoint(CWDEBUG_ONLY(bool debug = false)) : AIStatefulTask(CWDEBUG_ONLY(debug))
