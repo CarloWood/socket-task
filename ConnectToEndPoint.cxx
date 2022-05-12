@@ -62,8 +62,7 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
     AI_CASE_RETURN(ConnectToEndPoint_connect_failed);
     AI_CASE_RETURN(ConnectToEndPoint_done);
   }
-  ASSERT(false);
-  return "UNKNOWN STATE";
+  AI_NEVER_REACHED;
 }
 
 bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
