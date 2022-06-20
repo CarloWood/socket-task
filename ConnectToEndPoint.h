@@ -95,8 +95,9 @@ class ConnectToEndPoint : public AIStatefulTask
   /// Attempt a connect to address. Returning false is a failure, otherwise this function should result in a single call to connect_result.
   bool connect(evio::SocketAddress const& address);
 
-  /// Implementation of state_str for run states.
+  /// Implementation of virtual functions of AIStatefulTask.
   char const* state_str_impl(state_type run_state) const override;
+  char const* task_name_impl() const override;
 
   /// Handle mRunState.
   void multiplex_impl(state_type run_state) override;

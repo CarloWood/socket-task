@@ -65,6 +65,11 @@ char const* ConnectToEndPoint::state_str_impl(state_type run_state) const
   AI_NEVER_REACHED;
 }
 
+char const* ConnectToEndPoint::task_name_impl() const
+{
+  return "ConnectToEndPoint";
+}
+
 bool ConnectToEndPoint::connect(evio::SocketAddress const& address)
 {
   // A TLSSocket needs to use DNS because in that case an sni needs to be set.
